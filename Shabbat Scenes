@@ -1,0 +1,82 @@
+alias: Shabbat Scenes
+description: Shabbat Scenes
+trigger:
+  - at: "22:00:00"
+    platform: time
+    id: shabbat_1_evening_house
+  - at: "00:10:00"
+    platform: time
+    id: shabbat_2_night_house
+  - at: "09:15:00"
+    platform: time
+    id: shabbat_3_morning_closets
+  - at: "10:30:00"
+    platform: time
+    id: shabbat_4_morning_house
+  - at: "14:30:00"
+    platform: time
+    id: shabbat_5_day_house
+  - event: sunset
+    offset: "-01:20:00"
+    platform: sun
+    id: shabbat_6_sunset_house
+  - platform: time
+    at: input_datetime.kid_bedtime
+    id: shabbat_kid_bedtime
+condition:
+  - condition: state
+    entity_id: input_boolean.shabbat_active
+    state: "on"
+action:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: shabbat_1_evening_house
+        sequence:
+          - scene: scene.shabbat_1_evening
+      - conditions:
+          - condition: trigger
+            id: shabbat_2_night_house
+        sequence:
+          - scene: scene.shabbat_2_goodnight
+      - conditions:
+          - condition: trigger
+            id: shabbat_3_morning_closets
+        sequence:
+          - scene: scene.shabbat_3_closets
+      - conditions:
+          - condition: trigger
+            id: shabbat_4_morning_house
+        sequence:
+          - scene: scene.shabbat_4_morning
+          - data:
+              media_content_id: Alexa.Weather.Play
+              media_content_type: sequence
+            entity_id: media_player.living_room_echo
+            service: media_player.play_media
+      - conditions:
+          - condition: trigger
+            id: shabbat_5_day_house
+        sequence:
+          - scene: scene.shabbat_5_afternoon
+      - conditions:
+          - condition: trigger
+            id: shabbat_6_sunset_house
+        sequence:
+          - scene: scene.shabbat_0_sunset
+      - conditions:
+          - condition: trigger
+            id:
+              - shabbat_kid_bedtime
+        sequence:
+          - service: scene.turn_on
+            target:
+              entity_id: scene.yellow_room_red_nightlight
+            metadata: {}
+    default: []
+  - service: input_text.set_value
+    target:
+      entity_id: input_text.shabbat_scene
+    data:
+      value: "{{trigger.id}}"
+mode: single
